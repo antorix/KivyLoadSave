@@ -11,6 +11,7 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+from kivy.core.window import Window
 from android.permissions import request_permissions, Permission
 from androidstorage4kivy import SharedStorage, Chooser  # all the job is done via these two modules
 import os
@@ -37,7 +38,11 @@ class KivyLoadSave(App):
                               halign="center", size_hint_y=.2,)
         self.button2.bind(on_release=self.save_file)
         self.box.add_widget(self.button2)
-        self.popup_size_hint = [.75, .25]
+        self.popup_size_hint = [.85, .55]
+        self.text_size = (
+            Window.size[0]*self.popup_size_hint[0] *.9,
+            Window.size[1]*self.popup_size_hint[1] *.9
+        )
 
         return self.box
 
@@ -45,6 +50,7 @@ class KivyLoadSave(App):
         """ Callback handling the chooser """
         try:
             for uri in uri_list:
+                self.uri = uri  # just to keep this uri for reference
 
                 # We obtain the file from the Android's "Shared storage", but we can't work with it directly.
                 # We need to first copy it to our app's "Private storage." Then the path to the copied path
@@ -59,13 +65,16 @@ class KivyLoadSave(App):
         if self.opened_file is not None:
             with open(self.opened_file, "r") as file:  # now we can read the obtained path in a normal Python way
                 self.input.text = str(file.read()).strip()
-            Popup(
+
+            Popup(  # informing user about what exactly happened
                 title="Info",
                 content=Label(
-                    text="Loaded successfully. Find\nthe content of the file in the\ntext field."
+                    text=f"File with the URI:\n\n{self.uri}\n\ncopied to the private storage:\n\n{self.opened_file}\n\nand loaded from there.\n\nFind its content in the text field.",
+                    text_size=self.text_size, valign="center"
                 ),
                 size_hint=self.popup_size_hint
             ).open()
+
             self.opened_file = None  # reverting file path back to None
 
     def save_file(self, instance):
@@ -81,7 +90,8 @@ class KivyLoadSave(App):
         Popup(
             title="Info",
             content=Label(
-                text=f"File successfully saved to\nyour Documents, check it there!"
+                text=f"File:\n\n{filename}\n\ncreated and copied to your Documents folder (because Android thinks it's a document), check it there!",
+                text_size=self.text_size, valign="center"
             ),
             size_hint=self.popup_size_hint
         ).open()  # hurray!
