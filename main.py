@@ -29,7 +29,11 @@ class KivyLoadSave(App):
         self.box = BoxLayout(orientation="vertical")  # create our simple interface
         self.button1 = Button(text="Click here to LOAD any text file\nfrom your device memory",
                               halign="center", size_hint_y=.2)
+
+        # We bind the Chooser class to the 'Load' button. Chooser calls the standard Android
+        # browsing dialog and gives us the ability to address the entire file system:
         self.button1.bind(on_release=lambda x: Chooser(self.chooser_callback).choose_content("text/*"))
+        
         self.box.add_widget(self.button1)
         self.input = TextInput(hint_text="You will see loaded text here. Or type your own text to save it.",
                                input_type="text", background_color="white", background_normal = "")
@@ -48,22 +52,27 @@ class KivyLoadSave(App):
 
     def chooser_callback(self, uri_list):
         """ Callback handling the chooser """
+        
         try:
-            for uri in uri_list:
-                self.uri = uri  # just to keep this uri for reference
+            for uri in uri_list:               
 
                 # We obtain the file from the Android's "Shared storage", but we can't work with it directly.
-                # We need to first copy it to our app's "Private storage." Then the path to the copied path
-                # gets returned to our 'opened_file' variable:
+                # We need to first copy it to our app's "Private storage." The callback receives the
+                # 'android.net.Uri' rather than a usual POSIX-style file path. Calling the 'copy_from_shared'
+                # method copies this file to our private storage and returns a normal file path of the
+                # copied file in the private storage:
                 self.opened_file = SharedStorage().copy_from_shared(uri)
+
+                self.uri = uri  # just to keep the uri for future reference
 
         except Exception as e:
             pass
 
     def on_resume(self):
-        """ We load the file when the chooser closes and our app resumes from the paused mode """
+        """ We load our file when the chooser closes and our app resumes from the paused mode """
+        
         if self.opened_file is not None:
-            with open(self.opened_file, "r") as file:  # now we can read the obtained path in a normal Python way
+            with open(self.opened_file, "r") as file:  # we can work with this file in a normal Python way
                 self.input.text = str(file.read()).strip()
 
             Popup(  # informing user about what exactly happened
@@ -79,13 +88,14 @@ class KivyLoadSave(App):
 
     def save_file(self, instance):
         """ Save the content of the input field to device's Documents folder """
+        
         filename = os.path.join(SharedStorage().get_cache_dir(),
                                 "My text from KivyLoadSave.txt")  # forming the path of our new file
 
-        with open(filename, "w") as file:  # now we create it in a normal way, but only in the private storage
+        with open(filename, "w") as file:  # creating the file in a normal way, but again in the private storage
             file.write(self.input.text.strip())
 
-        SharedStorage().copy_to_shared(private_file=filename)  # but then we copy it to the shared storage
+        SharedStorage().copy_to_shared(private_file=filename)  # but now we can copy it to the shared storage
 
         Popup(
             title="Info",
@@ -94,9 +104,9 @@ class KivyLoadSave(App):
                 text_size=self.text_size, valign="center"
             ),
             size_hint=self.popup_size_hint
-        ).open()  # hurray!
+        ).open()
 
-        # Note that Android copies our file to the Documents folder. It was done automatically. Why?
+        # Note that Android copies our file to the Documents folder. It is done automatically. Why?
         # Because we created a .txt file which Android recognizes as a document. If we create an .mp3 file,
         # it will go to the Music folder, etc. Let's try it:
 
