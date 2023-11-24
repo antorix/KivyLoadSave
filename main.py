@@ -25,6 +25,8 @@ class KivyLoadSave(App):
                              Permission.WRITE_EXTERNAL_STORAGE])  # get the permissions needed
 
         self.opened_file = None  # file path to load, None initially, changes later on
+
+        self.cache = SharedStorage().get_cache_dir()  #  file cache in the private storage (for cleaning purposes)
         
         self.box = BoxLayout(orientation="vertical")  # create our simple interface
         self.button1 = Button(text="Click here to LOAD any text file\nfrom your device memory",
@@ -85,6 +87,8 @@ class KivyLoadSave(App):
             ).open()
 
             self.opened_file = None  # reverting file path back to None
+            
+            if self.cache and os.path.exists(self.cache): shutil.rmtree(self.cache)  # cleaning cache
 
     def save_file(self, instance):
         """ Save the content of the input field to device's Documents folder """
@@ -118,9 +122,7 @@ class KivyLoadSave(App):
         # Check your Music folder now. Android also creates a subfolder named after your app.
         # This is the way Google now wants us to work with files and their "Collections".
 
-        temp = SharedStorage().get_cache_dir()  # cleaning our file cache in the private storage
-        if temp and os.path.exists(temp):
-            shutil.rmtree(temp)
+        if self.cache and os.path.exists(self.cache): shutil.rmtree(self.cache)  # cleaning cache
 
 
 if __name__ == "__main__":
