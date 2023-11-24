@@ -104,7 +104,6 @@ fullscreen = 0
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
 android.permissions = READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
-#android.permissions = android.permission.INTERNET, (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=18)
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
@@ -325,7 +324,6 @@ android.allow_backup = True
 
 # (str) python-for-android URL to use for checkout
 p4a.url = https://github.com/misl6/python-for-android.git
-#p4a.url =
 
 # (str) python-for-android fork to use in case if p4a.url is not specified, defaults to upstream (kivy)
 #p4a.fork = kivy
@@ -360,8 +358,7 @@ p4a.bootstrap = sdl2
 #p4a.setup_py = false
 
 # (str) extra command line arguments to pass when invoking pythonforandroid.toolchain
-#p4a.extra_args =
-p4a.extra_args = --blacklist-requirements=sqlite3
+p4a.extra_args = --blacklist-requirements=sqlite3,openssl
 
 
 #
